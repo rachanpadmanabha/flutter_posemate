@@ -26,6 +26,10 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
+    aaptOptions {
+        noCompress 'tflite'
+        noCompress 'lite'
+    }
     compileSdkVersion 29
 
     sourceSets {
@@ -38,7 +42,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.sayujsujeev.yoga_training_app"
+        applicationId "com.yarc.yoga_training_app"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode flutterVersionCode.toInteger()
@@ -52,6 +56,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    aaptOptions
 }
 
 flutter {

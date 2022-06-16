@@ -23,6 +23,7 @@ class _CameraState extends State<Camera> {
   void initState() {
     super.initState();
 
+    // ignore: unnecessary_null_comparison
     if (widget.cameras == null || widget.cameras.length < 1) {
       print('No camera is found');
     } else {
