@@ -23,8 +23,6 @@ class _PushedPageSState extends State<PushedPageS> {
   @override
   void initState() {
     super.initState();
-    var res = loadModel();
-    print('Model Response: ' + res.toString());
   }
 
   _setRecognitions(data, imageHeight, imageWidth) {
@@ -61,9 +59,7 @@ class _PushedPageSState extends State<PushedPageS> {
       ),
       body: Stack(
         children: <Widget>[
-          Camera(
-            cameras: widget.cameras,
-            setRecognitions: _setRecognitions,
+          CameraScreen(
           ),
           RenderData(
             // ignore: unnecessary_null_comparison

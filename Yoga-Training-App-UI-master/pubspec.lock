@@ -84,7 +84,7 @@ packages:
       name: cupertino_icons
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.5"
   curved_navigation_bar:
     dependency: "direct main"
     description:
@@ -433,7 +433,7 @@ packages:
       name: tflite_flutter_helper
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.1"
+    version: "0.2.2"
   tuple:
     dependency: transitive
     description:
