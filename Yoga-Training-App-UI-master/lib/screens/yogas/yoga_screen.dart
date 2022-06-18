@@ -117,7 +117,12 @@ class _Yoga_ScreenPageState extends State<Yoga_ScreenPage> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom:20.0,right: 10),
         child: FloatingActionButton(
-                onPressed:() => onSelectA(context: context, modelName: 'posenet') ,
+                onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>CameraScreen(),
+              ),
+            ),
             backgroundColor: black,
             tooltip: "open Camera to record",
                 child: Icon( Icons.camera_rounded,
@@ -133,10 +138,7 @@ void onSelectA({ required BuildContext context, required String modelName}) asyn
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => PushedPageS(
-        cameras: cameras,
-        title: modelName,
-      ),
+      builder: (context) => CameraScreen()
     ),
   );
 }

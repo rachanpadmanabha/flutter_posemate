@@ -63,7 +63,7 @@ class _PushedPageSState extends State<PushedPageS> {
           ),
           RenderData(
             // ignore: unnecessary_null_comparison
-            data: _data == null ? [] : _data,
+            data: _data == null ? {} : {},
             previewH: max(_imageHeight, _imageWidth),
             previewW: min(_imageHeight, _imageWidth),
             screenH: screen.height,

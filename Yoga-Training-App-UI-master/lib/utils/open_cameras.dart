@@ -2,13 +2,14 @@
 
 import 'dart:isolate';
 import 'dart:ui';
-
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:yoga_training_app/tflite/classifier.dart';
 import 'package:yoga_training_app/tflite/recognition.dart';
 import 'package:yoga_training_app/utils/camera_view_singleton.dart';
 import 'package:yoga_training_app/utils/isolate_utils.dart';
+import 'package:yoga_training_app/utils/render_data.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -22,7 +23,9 @@ class _CameraScreenState extends State<CameraScreen> {
   late List cameras;
   late int selectedCameraIdx;
   late String imagePath;
-
+  int _imageHeight = 0;
+  int _imageWidth = 0;
+  Map<String, dynamic> inferenceResults = {};
   /// Instance of [Classifier]
   late Classifier classifier;
 
@@ -30,7 +33,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late IsolateUtils isolateUtils;
 
   /// List of [Recognitions]
-  List<Recognition> _recognitions = [];
+  List<Recognition> _recognitions = [Recognition("", Offset(0,0), 0)];
   static const double THRESHOLD = 0.3;
   bool _predicting = false;
 
@@ -121,10 +124,10 @@ class _CameraScreenState extends State<CameraScreen> {
 
   /// Callback to receive each frame [CameraImage] perform inference on it
   onLatestImageAvailable(CameraImage cameraImage) async {
-    print("******************* Width: ${cameraImage.width} ***************");
-    print("******************* Height: ${cameraImage.height} ***************");
+    print("******* Width: ${cameraImage.width} *****");
+    print("******* Height: ${cameraImage.height} *****");
     print(
-        "******************* controller size: ${controller!.value.previewSize} ***************");
+        "******* controller size: ${controller!.value.previewSize} *****");
     if (classifier.interpreter != null) {
       // If previous inference has not completed then return
       if (_predicting) {
@@ -146,7 +149,7 @@ class _CameraScreenState extends State<CameraScreen> {
       // to another isolate.
 
       /// perform inference in separate isolate
-      Map<String, dynamic> inferenceResults = await inference(isolateData);
+      inferenceResults = await inference(isolateData);
 
       setState(() {
         _recognitions = inferenceResults['recognitions']
@@ -159,7 +162,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
       print('###############################################');
       print(
-          '************** uiThreadInferenceElapsedTime: $uiThreadInferenceElapsedTime');
+          '****** uiThreadInferenceElapsedTime: $uiThreadInferenceElapsedTime');
       // if (_recognitions.isNotEmpty)
       print('recognitions: ${_recognitions}');
       print('###############################################');
@@ -196,32 +199,36 @@ class _CameraScreenState extends State<CameraScreen> {
       final size = MediaQuery.of(context).size;
       final sizeAr = MediaQuery.of(context).size.aspectRatio;
       final scale = 1 / (controller!.value.aspectRatio * sizeAr);
-      return Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Stack(
+      var tmp = MediaQuery.of(context).size;
+    var screenH = math.max(tmp.height, tmp.width);
+    var screenW = math.min(tmp.height, tmp.width);
+    tmp = controller!.value.previewSize!;
+    var previewH = math.max(tmp.height, tmp.width);
+    var previewW = math.min(tmp.height, tmp.width);
+    var screenRatio = screenH / screenW;
+    var previewRatio = previewH / previewW;
+      
+      return Stack(
               children: [
-                CameraPreview(controller!,
-                    child: AspectRatio(
-                      aspectRatio: controller!.value.aspectRatio,
-                      child: Container(
-                        child: true //_recognitions.isNotEmpty
-                            ? CustomPaint(
-                                painter: PointPainter(
-                                  recognitions: [],
-                                  scale: 1,
-                                ),
-                              )
-                            : null,
-                      ),
-                    )),
-              ],
-            ),
-            _cameraTogglesRowWidget()
-          ],
-        ),
-      );
+                OverflowBox(
+      maxHeight:
+          screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
+      maxWidth:
+          screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
+      child: CameraPreview(controller!),
+          ),
+          RenderData(
+            // ignore: unnecessary_null_comparison
+            data: inferenceResults ,
+            previewH: math.max(_imageHeight, _imageWidth),
+            previewW: math.min(_imageHeight, _imageWidth),
+            screenH: size.height,
+            screenW: size.width,
+          ),
+                     
+                _cameraTogglesRowWidget(),
+               ],
+            );
     }
     return Center(child: CircularProgressIndicator());
   }
@@ -267,39 +274,39 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 }
 
-class PointPainter extends CustomPainter {
-  PointPainter({required List recognitions, required double scale}) {
-    for (Recognition elm in recognitions) {
-      Offset off = elm.location;
-      points.add(off * scale);
-    }
-  }
+// class PointPainter extends CustomPainter {
+//   PointPainter({required List recognitions, required double scale}) {
+//     for (Recognition elm in recognitions) {
+//       Offset off = elm.location;
+//       points.add(off * scale);
+//     }
+//   }
 
-  double scale = 1.0;
-  List<Offset> points = [
-    // Offset(0, 0),
-    // Offset(2, 2),
-    // Offset(4, 4),
-    // Offset(64, 64),
-    // Offset(128, 128),
-    // Offset(256, 256),
-    // Offset(512, 512),
-    // Offset(,),
-    Offset(350, 100),
-    // Offset(410, 850),
-  ];
+//   double scale = 1.0;
+//   List<Offset> points = [
+//     // Offset(0, 0),
+//     // Offset(2, 2),
+//     // Offset(4, 4),
+//     // Offset(64, 64),
+//     // Offset(128, 128),
+//     // Offset(256, 256),
+//     // Offset(512, 512),
+//     // Offset(,),
+//     Offset(350, 100),
+//     // Offset(410, 850),
+//   ];
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint painter = Paint()
-      ..color = Color(0xFF64aa65)
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPoints(PointMode.points, points, painter);
-  }
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     Paint painter = Paint()
+//       ..color = Color(0xFF64aa65)
+//       ..strokeWidth = 10
+//       ..strokeCap = StrokeCap.round;
+//     canvas.drawPoints(PointMode.points, points, painter);
+//   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+//     return true;
+//   }
+// }

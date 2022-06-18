@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:yoga_training_app/tflite/recognition.dart';
 
 class RenderData extends StatefulWidget {
-  final List<dynamic> data;
+  final Map<String, dynamic> data;
   final int previewH;
   final int previewW;
   final double screenH;
   final double screenW;
 
   RenderData(
-      {required this.data, required this.previewH, required this.previewW, required this.screenH, required this.screenW});
+      {required this.data,
+      required this.previewH,
+      required this.previewW,
+      required this.screenH,
+      required this.screenW});
   @override
   _RenderDataState createState() => _RenderDataState();
 }
 
 class _RenderDataState extends State<RenderData> {
   late Map<String, List<double>> inputArr;
-
+  static const double THRESHOLD = 0.3;
   late String excercise = 'squat';
   late double upperRange = 300;
   late double lowerRange = 500;
@@ -44,6 +49,8 @@ class _RenderDataState extends State<RenderData> {
   var leftAnklePos = Vector(0, 0);
   var rightAnklePos = Vector(0, 0);
 
+  List<Recognition> _recognitions = [Recognition("", Offset(0,0), 0)];
+
   @override
   void initState() {
     inputArr = new Map();
@@ -57,6 +64,9 @@ class _RenderDataState extends State<RenderData> {
     kneeLY = 0;
     squatUp = true;
     super.initState();
+    _recognitions = widget.data['recognitions']
+        .where((Recognition value) => value.score >= THRESHOLD)
+        .toList();
   }
 
   bool _postureAccordingToExercise(Map<String, List<double>> poses) {
@@ -149,6 +159,16 @@ class _RenderDataState extends State<RenderData> {
 
   @override
   Widget build(BuildContext context) {
+    print("BBBBBBBBBBBBBBBBOOOOOOOOOOOOO");
+
+    print(widget.data);
+    print(widget.previewH);
+    print(widget.previewW);
+    print(widget.screenH);
+    print(widget.screenW);
+    print(_recognitions);
+    print("OOOOOOOOOOOOOOOOOOOOOOOOOOBBBBBBBBBBBBB");
+
     void _getKeyPoints(k, x, y) {
       if (k["part"] == 'leftEye') {
         leftEyePos.x = x - 230;
@@ -208,74 +228,74 @@ class _RenderDataState extends State<RenderData> {
       }
     }
 
-    List<Widget> _renderKeypoints() {
-      var lists = <Widget>[];
-      widget.data.forEach((re) {
-        var list = re["keypoints"].values.map<Widget>((k) {
-          var _x = k["x"];
-          var _y = k["y"];
-          var scaleW, scaleH, x, y;
+    // List<Widget> _renderKeypoints() {
+    //   var lists = <Widget>[];
+    //   widget.data.forEach((re) {
+    //     var list = re["keypoints"].values.map<Widget>((k) {
+    //       var _x = k["x"];
+    //       var _y = k["y"];
+    //       var scaleW, scaleH, x, y;
 
-          if (widget.screenH / widget.screenW >
-              widget.previewH / widget.previewW) {
-            scaleW = widget.screenH / widget.previewH * widget.previewW;
-            scaleH = widget.screenH;
-            var difW = (scaleW - widget.screenW) / scaleW;
-            x = (_x - difW / 2) * scaleW;
-            y = _y * scaleH;
-          } else {
-            scaleH = widget.screenW / widget.previewW * widget.previewH;
-            scaleW = widget.screenW;
-            var difH = (scaleH - widget.screenH) / scaleH;
-            x = _x * scaleW;
-            y = (_y - difH / 2) * scaleH;
-          }
-          inputArr[k['part']] = [x, y];
-          //Mirroring
-          if (x > 320) {
-            var temp = x - 320;
-            x = 320 - temp;
-          } else {
-            var temp = 320 - x;
-            x = 320 + temp;
-          }
+    //       if (widget.screenH / widget.screenW >
+    //           widget.previewH / widget.previewW) {
+    //         scaleW = widget.screenH / widget.previewH * widget.previewW;
+    //         scaleH = widget.screenH;
+    //         var difW = (scaleW - widget.screenW) / scaleW;
+    //         x = (_x - difW / 2) * scaleW;
+    //         y = _y * scaleH;
+    //       } else {
+    //         scaleH = widget.screenW / widget.previewW * widget.previewH;
+    //         scaleW = widget.screenW;
+    //         var difH = (scaleH - widget.screenH) / scaleH;
+    //         x = _x * scaleW;
+    //         y = (_y - difH / 2) * scaleH;
+    //       }
+    //       inputArr[k['part']] = [x, y];
+    //       //Mirroring
+    //       if (x > 320) {
+    //         var temp = x - 320;
+    //         x = 320 - temp;
+    //       } else {
+    //         var temp = 320 - x;
+    //         x = 320 + temp;
+    //       }
 
-          _getKeyPoints(k, x, y);
+    //       _getKeyPoints(k, x, y);
 
-          if (k["part"] == 'leftEye') {
-            leftEyePos.x = x - 230;
-            leftEyePos.y = y - 45;
-          }
-          if (k["part"] == 'rightEye') {
-            rightEyePos.x = x - 230;
-            rightEyePos.y = y - 45;
-          }
-          return Positioned(
-            left: x - 230,
-            top: y - 50,
-            width: 100,
-            height: 15,
-            child: Container(
-                // child: Text(
-                //   "● ${k["part"]}",
-                //   style: TextStyle(
-                //     color: Color.fromRGBO(37, 213, 253, 1.0),
-                //     fontSize: 12.0,
-                //   ),
-                // ),
-                ),
-          );
-        }).toList();
+    //       if (k["part"] == 'leftEye') {
+    //         leftEyePos.x = x - 230;
+    //         leftEyePos.y = y - 45;
+    //       }
+    //       if (k["part"] == 'rightEye') {
+    //         rightEyePos.x = x - 230;
+    //         rightEyePos.y = y - 45;
+    //       }
+    //       return Positioned(
+    //         left: x - 230,
+    //         top: y - 50,
+    //         width: 100,
+    //         height: 15,
+    //         child: Container(
+    //             // child: Text(
+    //             //   "● ${k["part"]}",
+    //             //   style: TextStyle(
+    //             //     color: Color.fromRGBO(37, 213, 253, 1.0),
+    //             //     fontSize: 12.0,
+    //             //   ),
+    //             // ),
+    //             ),
+    //       );
+    //     }).toList();
 
-        _countingLogic(inputArr);
-        inputArr.clear();
+    //     _countingLogic(inputArr);
+    //     inputArr.clear();
 
-        lists..addAll(list);
-      });
-      //lists.clear();
+    //     lists..addAll(list);
+    //   });
+    //   //lists.clear();
 
-      return lists;
-    }
+    //   return lists;
+    // }
 
     return Stack(
       children: <Widget>[
@@ -320,7 +340,7 @@ class _RenderDataState extends State<RenderData> {
             ),
           ],
         ),
-        Stack(children: _renderKeypoints()),
+        Stack(children: [Container()]),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
