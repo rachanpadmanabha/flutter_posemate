@@ -37,22 +37,22 @@ class Classifier {
 
   static const List<String> KEYPOINTS = [
     'nose',
-    'left eye',
-    'right eye',
-    'left ear',
-    'right ear',
-    'left shoulder',
-    'right shoulder',
-    'left elbow',
-    'right elbow',
-    'left wrist',
-    'right wrist',
-    'left hip',
-    'right hip',
-    'left knee',
-    'right knee',
-    'left ankle',
-    'right ankle'
+    'leftEye',
+    'rightEye',
+    'leftEar',
+    'rightEar',
+    'leftShoulder',
+    'rightShoulder',
+    'leftElbow',
+    'rightElbow',
+    'leftWrist',
+    'rightWrist',
+    'leftHip',
+    'rightHip',
+    'leftKnee',
+    'rightKnee',
+    'leftAnkle',
+    'rightAnkle'
   ];
 
   Classifier({Interpreter? interpreter}) {
@@ -132,7 +132,9 @@ class Classifier {
     var inferenceTimeElapsed =
         DateTime.now().millisecondsSinceEpoch - inferenceTimeStart;
 
-    List<Recognition> recognitions = [];
+    List<dynamic> recognitions1 = [];
+    Map recognitions = {'score':0,};
+    Map keypoints = {};
 
     for (int i = 0; i < 17; i++) {
       //   // Prediction score
@@ -149,24 +151,26 @@ class Classifier {
       // imageProcessor.inverseTransform(location, image.height, image.width);
 
       // var cam = CameraViewSingleton.inputImageSize;
+      keypoints[i] = {'score':score, 'part':label,'x':x,'y':y};
+    //   Offset temp = Offset(x * image.width, y * image.height);
 
-      Offset temp = Offset(x * image.width, y * image.height);
+    //   Recognition recognition = Recognition(label, temp, score);
 
-      Recognition recognition = Recognition(label, temp, score);
-
-      recognitions.add(recognition);
+    //   recognitions.add(recognition);
     }
+    recognitions['keypoints'] = keypoints;
+    // recognitions1.add(recognitions);
     var predictElapsedTime =
         DateTime.now().millisecondsSinceEpoch - predictStartTime;
-
-    return {
-      "recognitions": recognitions,
-      "stats": Stats(
-        totalPredictTime: predictElapsedTime,
-        inferenceTime: inferenceTimeElapsed,
-        preProcessingTime: preProcessElapsedTime,
-        totalElapsedTime: predictElapsedTime,
-      )
-    };
+    return [recognitions];
+    // return {
+    //   "recognitions": recognitions,
+    //   "stats": Stats(
+    //     totalPredictTime: predictElapsedTime,
+    //     inferenceTime: inferenceTimeElapsed,
+    //     preProcessingTime: preProcessElapsedTime,
+    //     totalElapsedTime: predictElapsedTime,
+    //   )
+    // };
   }
 }

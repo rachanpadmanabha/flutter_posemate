@@ -134,12 +134,4 @@ class _Yoga_ScreenPageState extends State<Yoga_ScreenPage> {
   }
 }
 
-void onSelectA({ required BuildContext context, required String modelName}) async {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CameraScreen()
-    ),
-  );
-}
 

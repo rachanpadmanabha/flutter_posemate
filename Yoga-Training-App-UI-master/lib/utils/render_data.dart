@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:yoga_training_app/tflite/recognition.dart';
 
 class RenderData extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final List<dynamic
+  > data;
   final int previewH;
   final int previewW;
   final double screenH;
@@ -20,7 +21,7 @@ class RenderData extends StatefulWidget {
 
 class _RenderDataState extends State<RenderData> {
   late Map<String, List<double>> inputArr;
-  static const double THRESHOLD = 0.3;
+  // static const double THRESHOLD = 0.00001;
   late String excercise = 'squat';
   late double upperRange = 300;
   late double lowerRange = 500;
@@ -49,7 +50,7 @@ class _RenderDataState extends State<RenderData> {
   var leftAnklePos = Vector(0, 0);
   var rightAnklePos = Vector(0, 0);
 
-  List<Recognition> _recognitions = [Recognition("", Offset(0,0), 0)];
+  List<Recognition> _recognitions = [];
 
   @override
   void initState() {
@@ -64,9 +65,6 @@ class _RenderDataState extends State<RenderData> {
     kneeLY = 0;
     squatUp = true;
     super.initState();
-    _recognitions = widget.data['recognitions']
-        .where((Recognition value) => value.score >= THRESHOLD)
-        .toList();
   }
 
   bool _postureAccordingToExercise(Map<String, List<double>> poses) {
@@ -89,7 +87,7 @@ class _RenderDataState extends State<RenderData> {
             poses['rightShoulder']![1] > 475;
       }
     }
-    return false;
+    return true;
   }
 
   _checkCorrectPosture(Map<String, List<double>> poses) {
@@ -159,143 +157,153 @@ class _RenderDataState extends State<RenderData> {
 
   @override
   Widget build(BuildContext context) {
+    
     print("BBBBBBBBBBBBBBBBOOOOOOOOOOOOO");
 
     print(widget.data);
-    print(widget.previewH);
-    print(widget.previewW);
+    if (widget.previewH!= null){print('111');}else{print('H1');}
+        if (widget.previewW!= null){print('0000');}else{print('W1');}
+
+    // print(widget.previewH);
+    // print(widget.previewW+1,);
     print(widget.screenH);
     print(widget.screenW);
     print(_recognitions);
     print("OOOOOOOOOOOOOOOOOOOOOOOOOOBBBBBBBBBBBBB");
 
     void _getKeyPoints(k, x, y) {
-      if (k["part"] == 'leftEye') {
+      if (k['part'] == 'leftEye') {
         leftEyePos.x = x - 230;
         leftEyePos.y = y - 45;
       }
-      if (k["part"] == 'rightEye') {
+      if (k['part'] == 'rightEye') {
         rightEyePos.x = x - 230;
         rightEyePos.y = y - 45;
       }
-      if (k["part"] == 'leftShoulder') {
+      if (k['part'] == 'leftShoulder') {
         leftShoulderPos.x = x - 230;
         leftShoulderPos.y = y - 45;
       }
-      if (k["part"] == 'rightShoulder') {
+      if (k['part'] == 'rightShoulder') {
         rightShoulderPos.x = x - 230;
         rightShoulderPos.y = y - 45;
       }
-      if (k["part"] == 'leftElbow') {
+      if (k['part'] == 'leftElbow') {
         leftElbowPos.x = x - 230;
         leftElbowPos.y = y - 45;
       }
-      if (k["part"] == 'rightElbow') {
+      if (k['part'] == 'rightElbow') {
         rightElbowPos.x = x - 230;
         rightElbowPos.y = y - 45;
       }
-      if (k["part"] == 'leftWrist') {
+      if (k['part'] == 'leftWrist') {
         leftWristPos.x = x - 230;
         leftWristPos.y = y - 45;
       }
-      if (k["part"] == 'rightWrist') {
+      if (k['part'] == 'rightWrist') {
         rightWristPos.x = x - 230;
         rightWristPos.y = y - 45;
       }
-      if (k["part"] == 'leftHip') {
+      if (k['part'] == 'leftHip') {
         leftHipPos.x = x - 230;
         leftHipPos.y = y - 45;
       }
-      if (k["part"] == 'rightHip') {
+      if (k['part'] == 'rightHip') {
         rightHipPos.x = x - 230;
         rightHipPos.y = y - 45;
       }
-      if (k["part"] == 'leftKnee') {
+      if (k['part'] == 'leftKnee') {
         leftKneePos.x = x - 230;
         leftKneePos.y = y - 45;
       }
-      if (k["part"] == 'rightKnee') {
+      if (k['part'] == 'rightKnee') {
         rightKneePos.x = x - 230;
         rightKneePos.y = y - 45;
       }
-      if (k["part"] == 'leftAnkle') {
+      if (k['part'] == 'leftAnkle') {
         leftAnklePos.x = x - 230;
         leftAnklePos.y = y - 45;
       }
-      if (k["part"] == 'rightAnkle') {
+      if (k['part'] == 'rightAnkle') {
         rightAnklePos.x = x - 230;
         rightAnklePos.y = y - 45;
       }
     }
 
-    // List<Widget> _renderKeypoints() {
-    //   var lists = <Widget>[];
-    //   widget.data.forEach((re) {
-    //     var list = re["keypoints"].values.map<Widget>((k) {
-    //       var _x = k["x"];
-    //       var _y = k["y"];
-    //       var scaleW, scaleH, x, y;
+    List<Widget> _renderKeypoints() {
+      var lists = <Widget>[];
+      widget.data.forEach((re) {
+        var list = re['keypoints'].values.map<Widget>((k) {
+          var _x = k['x'];
+          var _y = k['y'];
+          var scaleW, scaleH, x, y;
 
-    //       if (widget.screenH / widget.screenW >
-    //           widget.previewH / widget.previewW) {
-    //         scaleW = widget.screenH / widget.previewH * widget.previewW;
-    //         scaleH = widget.screenH;
-    //         var difW = (scaleW - widget.screenW) / scaleW;
-    //         x = (_x - difW / 2) * scaleW;
-    //         y = _y * scaleH;
-    //       } else {
-    //         scaleH = widget.screenW / widget.previewW * widget.previewH;
-    //         scaleW = widget.screenW;
-    //         var difH = (scaleH - widget.screenH) / scaleH;
-    //         x = _x * scaleW;
-    //         y = (_y - difH / 2) * scaleH;
-    //       }
-    //       inputArr[k['part']] = [x, y];
-    //       //Mirroring
-    //       if (x > 320) {
-    //         var temp = x - 320;
-    //         x = 320 - temp;
-    //       } else {
-    //         var temp = 320 - x;
-    //         x = 320 + temp;
-    //       }
+          
+          if (widget.screenH / widget.screenW >
+              widget.previewH / widget.previewW) {
+                // if (widget.previewW != null){
+            scaleW = widget.screenH / widget.previewH * widget.previewW;
+                // }
+            scaleH = widget.screenH;
+            var difW = (scaleW - widget.screenW) / scaleW;
+            x = (_x - difW / 2) * scaleW;
+            y = _y * scaleH;
+          } else {
+            // if (widget.previewW != null){
+            scaleH = widget.screenW / widget.previewW * widget.previewH;
+            // }
+            scaleW = widget.screenW;
+            var difH = (scaleH - widget.screenH) / scaleH;
+            x = _x * scaleW;
+            y = (_y - difH / 2) * scaleH;
+          }
+        
+          inputArr[k['part']] = [x, y];
+          //Mirroring
+          if (x > 320) {
+            var temp = x - 320;
+            x = 320 - temp;
+          } else {
+            var temp = 320 - x;
+            x = 320 + temp;
+          }
 
-    //       _getKeyPoints(k, x, y);
+          _getKeyPoints(k, x, y);
 
-    //       if (k["part"] == 'leftEye') {
-    //         leftEyePos.x = x - 230;
-    //         leftEyePos.y = y - 45;
-    //       }
-    //       if (k["part"] == 'rightEye') {
-    //         rightEyePos.x = x - 230;
-    //         rightEyePos.y = y - 45;
-    //       }
-    //       return Positioned(
-    //         left: x - 230,
-    //         top: y - 50,
-    //         width: 100,
-    //         height: 15,
-    //         child: Container(
-    //             // child: Text(
-    //             //   "● ${k["part"]}",
-    //             //   style: TextStyle(
-    //             //     color: Color.fromRGBO(37, 213, 253, 1.0),
-    //             //     fontSize: 12.0,
-    //             //   ),
-    //             // ),
-    //             ),
-    //       );
-    //     }).toList();
+          if (k['part'] == 'leftEye') {
+            leftEyePos.x = x - 230;
+            leftEyePos.y = y - 45;
+          }
+          if (k['part'] == 'rightEye') {
+            rightEyePos.x = x - 230;
+            rightEyePos.y = y - 45;
+          }
+          return Positioned(
+            left: x - 230,
+            top: y - 50,
+            width: 100,
+            height: 15,
+            child: Container(
+                // child: Text(
+                //   "● ${k['part']}",
+                //   style: TextStyle(
+                //     color: Color.fromRGBO(37, 213, 253, 1.0),
+                //     fontSize: 12.0,
+                //   ),
+                // ),
+                ),
+          );
+        }).toList();
 
-    //     _countingLogic(inputArr);
-    //     inputArr.clear();
+        _countingLogic(inputArr);
+        inputArr.clear();
 
-    //     lists..addAll(list);
-    //   });
-    //   //lists.clear();
+        lists..addAll(list);
+      });
+      //lists.clear();
 
-    //   return lists;
-    // }
+      return lists;
+    }
 
     return Stack(
       children: <Widget>[
@@ -340,7 +348,7 @@ class _RenderDataState extends State<RenderData> {
             ),
           ],
         ),
-        Stack(children: [Container()]),
+        Stack(children: _renderKeypoints()),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -378,6 +386,12 @@ class MyPainter extends CustomPainter {
   MyPainter({required this.left, required this.right});
   @override
   void paint(Canvas canvas, Size size) {
+    print('inside painter');
+    print(left.x);
+    print(left.y);
+    
+    print(right.x);
+    print(right.y);
     final p1 = Offset(left.x, left.y);
     final p2 = Offset(right.x, right.y);
     final paint = Paint()

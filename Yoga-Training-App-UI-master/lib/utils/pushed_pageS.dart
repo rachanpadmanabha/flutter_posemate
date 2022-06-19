@@ -61,14 +61,6 @@ class _PushedPageSState extends State<PushedPageS> {
         children: <Widget>[
           CameraScreen(
           ),
-          RenderData(
-            // ignore: unnecessary_null_comparison
-            data: _data == null ? {} : {},
-            previewH: max(_imageHeight, _imageWidth),
-            previewW: min(_imageHeight, _imageWidth),
-            screenH: screen.height,
-            screenW: screen.width,
-          ),
         ],
       ),
     );

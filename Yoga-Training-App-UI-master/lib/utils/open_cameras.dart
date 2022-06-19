@@ -25,7 +25,8 @@ class _CameraScreenState extends State<CameraScreen> {
   late String imagePath;
   int _imageHeight = 0;
   int _imageWidth = 0;
-  Map<String, dynamic> inferenceResults = {};
+  List<dynamic> inferenceResults = [];
+
   /// Instance of [Classifier]
   late Classifier classifier;
 
@@ -33,7 +34,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late IsolateUtils isolateUtils;
 
   /// List of [Recognitions]
-  List<Recognition> _recognitions = [Recognition("", Offset(0,0), 0)];
+  List<Recognition> _recognitions = [];
   static const double THRESHOLD = 0.3;
   bool _predicting = false;
 
@@ -62,6 +63,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   @override
+  // ignore: must_call_super
   void dispose() {
     controller?.dispose();
   }
@@ -126,8 +128,8 @@ class _CameraScreenState extends State<CameraScreen> {
   onLatestImageAvailable(CameraImage cameraImage) async {
     print("******* Width: ${cameraImage.width} *****");
     print("******* Height: ${cameraImage.height} *****");
-    print(
-        "******* controller size: ${controller!.value.previewSize} *****");
+    print("******* controller size: ${controller!.value.previewSize} *****");
+    // ignore: unnecessary_null_comparison
     if (classifier.interpreter != null) {
       // If previous inference has not completed then return
       if (_predicting) {
@@ -151,11 +153,11 @@ class _CameraScreenState extends State<CameraScreen> {
       /// perform inference in separate isolate
       inferenceResults = await inference(isolateData);
 
-      setState(() {
-        _recognitions = inferenceResults['recognitions']
-            .where((Recognition value) => value.score >= THRESHOLD)
-            .toList();
-      });
+      // setState(() {
+      //   _recognitions = inferenceResults['recognitions']
+      //       .where((Recognition value) => value.score >= THRESHOLD)
+      //       .toList();
+      // });
 
       var uiThreadInferenceElapsedTime =
           DateTime.now().millisecondsSinceEpoch - uiThreadTimeStart;
@@ -164,6 +166,7 @@ class _CameraScreenState extends State<CameraScreen> {
       print(
           '****** uiThreadInferenceElapsedTime: $uiThreadInferenceElapsedTime');
       // if (_recognitions.isNotEmpty)
+      // ignore: unnecessary_brace_in_string_interps
       print('recognitions: ${_recognitions}');
       print('###############################################');
 
@@ -174,7 +177,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   /// Runs inference in another isolate
-  Future<Map<String, Object>> inference(IsolateData isolateData) async {
+  Future<List<dynamic>> inference(IsolateData isolateData) async {
     ReceivePort responsePort = ReceivePort();
     isolateUtils.sendPort
         .send(isolateData..responsePort = responsePort.sendPort);
@@ -188,52 +191,53 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Widget _cameraPreviewWidget() {
-    if (controller == null) {
+  if (controller == null) {
       return Center(
         child: CircularProgressIndicator(),
       );
-    }
+    } 
     if (controller != null &&
         controller!.value.isInitialized &&
+        // ignore: unnecessary_null_comparison
         controller!.value.aspectRatio != null) {
       final size = MediaQuery.of(context).size;
-      final sizeAr = MediaQuery.of(context).size.aspectRatio;
-      final scale = 1 / (controller!.value.aspectRatio * sizeAr);
       var tmp = MediaQuery.of(context).size;
-    var screenH = math.max(tmp.height, tmp.width);
-    var screenW = math.min(tmp.height, tmp.width);
-    tmp = controller!.value.previewSize!;
-    var previewH = math.max(tmp.height, tmp.width);
-    var previewW = math.min(tmp.height, tmp.width);
-    var screenRatio = screenH / screenW;
-    var previewRatio = previewH / previewW;
-      
+      var screenH = tmp.height;
+      var screenW = tmp.width+100.0;
+      tmp = controller!.value.previewSize!;
+      var previewH = math.max(tmp.height, tmp.width);
+      var previewW = math.min(tmp.height, tmp.width);
+      var screenRatio = screenH / screenW;
+      var previewRatio = previewH / previewW;
+
       return Stack(
-              children: [
-                OverflowBox(
-      maxHeight:
-          screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
-      maxWidth:
-          screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
-      child: CameraPreview(controller!),
+        children: [
+          OverflowBox(
+            maxHeight: screenRatio > previewRatio
+                ? screenH
+                : screenW / previewW * previewH,
+            maxWidth: screenRatio > previewRatio
+                ? screenH / previewH * previewW
+                : screenW,
+            child: CameraPreview(controller!),
           ),
           RenderData(
             // ignore: unnecessary_null_comparison
-            data: inferenceResults ,
+            data: inferenceResults,
             previewH: math.max(_imageHeight, _imageWidth),
             previewW: math.min(_imageHeight, _imageWidth),
             screenH: size.height,
             screenW: size.width,
           ),
-                     
-                _cameraTogglesRowWidget(),
-               ],
-            );
+          _cameraTogglesRowWidget(),
+        ],
+      );
     }
     return Center(child: CircularProgressIndicator());
   }
 
   Widget _cameraTogglesRowWidget() {
+    // ignore: unnecessary_null_comparison
     if (cameras == null || cameras.isEmpty) {
       return Spacer();
     }
