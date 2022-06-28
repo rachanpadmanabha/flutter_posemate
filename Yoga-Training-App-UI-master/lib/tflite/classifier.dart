@@ -146,31 +146,13 @@ class Classifier {
       double x = outputTensorBuffer.getDoubleValue((3 * i) + 1);
       double y = outputTensorBuffer.getDoubleValue(3 * i);
       Point location = Point(x, y);
-
-      // Point tmp =
-      // imageProcessor.inverseTransform(location, image.height, image.width);
-
-      // var cam = CameraViewSingleton.inputImageSize;
       keypoints[i] = {'score':score, 'part':label,'x':x,'y':y};
-    //   Offset temp = Offset(x * image.width, y * image.height);
-
-    //   Recognition recognition = Recognition(label, temp, score);
-
-    //   recognitions.add(recognition);
     }
     recognitions['keypoints'] = keypoints;
     // recognitions1.add(recognitions);
     var predictElapsedTime =
         DateTime.now().millisecondsSinceEpoch - predictStartTime;
     return [recognitions];
-    // return {
-    //   "recognitions": recognitions,
-    //   "stats": Stats(
-    //     totalPredictTime: predictElapsedTime,
-    //     inferenceTime: inferenceTimeElapsed,
-    //     preProcessingTime: preProcessElapsedTime,
-    //     totalElapsedTime: predictElapsedTime,
-    //   )
-    // };
+
   }
 }

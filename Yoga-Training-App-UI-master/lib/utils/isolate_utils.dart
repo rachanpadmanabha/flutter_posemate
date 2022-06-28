@@ -39,7 +39,7 @@ class IsolateUtils {
         imageLib.Image? image =
             ImageUtils.convertCameraImage(isolateData.cameraImage);
         if (Platform.isAndroid) {
-          image = imageLib.copyRotate(image!, 90);
+          image = imageLib.copyRotate(image!, 270); 
         }
         List<Map<dynamic, dynamic>> results = classifier.predict(image!);
         isolateData.responsePort.send(results);

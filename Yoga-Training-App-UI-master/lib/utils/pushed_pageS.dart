@@ -15,7 +15,8 @@ class PushedPageS extends StatefulWidget {
 }
 
 class _PushedPageSState extends State<PushedPageS> {
-  List<dynamic> _data=[];
+  late List<dynamic> _data;
+  late List<dynamic> _data1;
   int _imageHeight = 0;
   int _imageWidth = 0;
   int x = 1;
@@ -23,23 +24,22 @@ class _PushedPageSState extends State<PushedPageS> {
   @override
   void initState() {
     super.initState();
+    var res = loadModel();
+    //print('Model Response: ' + res.toString());
   }
 
-  _setRecognitions(data, imageHeight, imageWidth) {
-    print("asdfghjkl");
-    print(data);
-
+  _setRecognitions(data,data1, imageHeight, imageWidth) {
     if (!mounted) {
-      print("insideif");
       return;
     }
     setState(() {
       _data = data;
-      print("12345678");
-      print(_data);
-
+      _data1 = data1;
       _imageHeight = imageHeight;
       _imageWidth = imageWidth;
+      print('image details');
+      print(_imageHeight);
+      print(_imageWidth);
     });
   }
 
@@ -53,14 +53,14 @@ class _PushedPageSState extends State<PushedPageS> {
     Size screen = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text('PoseMate'),
+        title: Text('AlignAI Squat'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Stack(
         children: <Widget>[
-          CameraScreen(
-          ),
+          CameraScreen(cameras: widget.cameras, setRecognitions: _setRecognitions),
+            // cameras: widget.cameras,
         ],
       ),
     );

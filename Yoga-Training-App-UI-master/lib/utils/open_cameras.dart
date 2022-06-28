@@ -5,14 +5,22 @@ import 'dart:ui';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:tflite/tflite.dart';
 import 'package:yoga_training_app/tflite/classifier.dart';
 import 'package:yoga_training_app/tflite/recognition.dart';
 import 'package:yoga_training_app/utils/camera_view_singleton.dart';
 import 'package:yoga_training_app/utils/isolate_utils.dart';
 import 'package:yoga_training_app/utils/render_data.dart';
 
+typedef void Callback(List<dynamic> list,List<dynamic> list1, int h, int w);
+
+
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({Key? key}) : super(key: key);
+  final List<CameraDescription> cameras;
+  final Callback setRecognitions;
+
+  const CameraScreen({Key? key, required this.cameras, required this.setRecognitions}) : super(key: key);
+  
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -34,7 +42,7 @@ class _CameraScreenState extends State<CameraScreen> {
   late IsolateUtils isolateUtils;
 
   /// List of [Recognitions]
-  List<Recognition> _recognitions = [];
+  List<dynamic> recognitions = [];
   static const double THRESHOLD = 0.3;
   bool _predicting = false;
 
@@ -74,7 +82,7 @@ class _CameraScreenState extends State<CameraScreen> {
     }
 
     // 3
-    controller = CameraController(cameraDescription, ResolutionPreset.low);
+    controller = CameraController(cameraDescription, ResolutionPreset.high);
     controller!.initialize().then((_) async {
       print('############### Controller init #######################');
       // Start ImageStream
@@ -129,6 +137,33 @@ class _CameraScreenState extends State<CameraScreen> {
     print("******* Width: ${cameraImage.width} *****");
     print("******* Height: ${cameraImage.height} *****");
     print("******* controller size: ${controller!.value.previewSize} *****");
+    _imageHeight = cameraImage.height;
+    _imageWidth = cameraImage.width;
+    
+    CameraImage camImg=cameraImage;
+    // Tflite.runPoseNetOnFrame(
+    //           bytesList: camImg.planes.map((plane) {
+    //             return plane.bytes;
+    //           }).toList(),
+    //           imageHeight: camImg.height,
+    //           imageWidth: camImg.width,
+    //           //numResults: 2,
+    //           numResults: 1,
+    //           rotation: -90,
+    //           threshold: 0.1,
+    //           nmsRadius: 10,
+    //         ).then((recognitions) {
+    //           int endTime = new DateTime.now().millisecondsSinceEpoch;
+              //print("Detection took ${endTime - startTime}");
+            //   print(recognitions);
+
+            //   //widget.setRecognitions(recognitions, img.height, img.width);
+            //   print('imageDetails');
+            //   print(cameraImage.height);
+            //   print(cameraImage.width);
+
+            //   // isDetecting = false;
+            // });
     // ignore: unnecessary_null_comparison
     if (classifier.interpreter != null) {
       // If previous inference has not completed then return
@@ -152,6 +187,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
       /// perform inference in separate isolate
       inferenceResults = await inference(isolateData);
+      widget.setRecognitions(inferenceResults, recognitions,cameraImage.height,cameraImage.width);
 
       // setState(() {
       //   _recognitions = inferenceResults['recognitions']
@@ -167,7 +203,7 @@ class _CameraScreenState extends State<CameraScreen> {
           '****** uiThreadInferenceElapsedTime: $uiThreadInferenceElapsedTime');
       // if (_recognitions.isNotEmpty)
       // ignore: unnecessary_brace_in_string_interps
-      print('recognitions: ${_recognitions}');
+      print('recognitions: ${recognitions}');
       print('###############################################');
 
       setState(() {
@@ -200,38 +236,69 @@ class _CameraScreenState extends State<CameraScreen> {
         controller!.value.isInitialized &&
         // ignore: unnecessary_null_comparison
         controller!.value.aspectRatio != null) {
-      final size = MediaQuery.of(context).size;
-      var tmp = MediaQuery.of(context).size;
-      var screenH = tmp.height;
-      var screenW = tmp.width+100.0;
-      tmp = controller!.value.previewSize!;
-      var previewH = math.max(tmp.height, tmp.width);
-      var previewW = math.min(tmp.height, tmp.width);
-      var screenRatio = screenH / screenW;
-      var previewRatio = previewH / previewW;
+       var tmp = MediaQuery.of(context).size;
+    var screenH = math.max(tmp.height, tmp.width);
+    var screenW = math.min(tmp.height, tmp.width);
+    tmp = controller!.value.previewSize!;
+    var previewH = math.max(tmp.height, tmp.width);
+    var previewW = math.min(tmp.height, tmp.width);
+    var screenRatio = screenH / screenW;
+    var previewRatio = previewH / previewW;
+    Size screen = MediaQuery.of(context).size;
+      print('PREVIEW');
+      print(previewW);
+      print(previewH);
+      print(_imageHeight);
+      print(_imageWidth);
 
-      return Stack(
-        children: [
+      // return Stack(
+      //   children: [
+      //     OverflowBox(
+      //       maxHeight: screenRatio > previewRatio
+      //           ? screenH
+      //           : screenW / previewW * previewH,
+      //       maxWidth: screenRatio > previewRatio
+      //           ? screenH / previewH * previewW
+      //           : screenW,
+      //       child: CameraPreview(controller!),
+      //     ),
+      //     RenderData(
+      //       // ignore: unnecessary_null_comparison
+      //       data: inferenceResults,
+      //       previewH:math.max(_imageHeight, _imageWidth),
+      //       previewW: math.min(_imageHeight, _imageWidth),
+      //       screenH: size.height,
+      //       screenW: size.width,
+      //     ),
+      //     _cameraTogglesRowWidget(),
+      //   ],
+      // );
+      return  Scaffold(
+      appBar: AppBar(
+        title: Text('PoseMate'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
+        children: <Widget>[
           OverflowBox(
-            maxHeight: screenRatio > previewRatio
-                ? screenH
-                : screenW / previewW * previewH,
-            maxWidth: screenRatio > previewRatio
-                ? screenH / previewH * previewW
-                : screenW,
-            child: CameraPreview(controller!),
-          ),
+      maxHeight:
+          screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
+      maxWidth:
+          screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
+      child: CameraPreview(controller!),),
           RenderData(
             // ignore: unnecessary_null_comparison
-            data: inferenceResults,
-            previewH: math.max(_imageHeight, _imageWidth),
+            data1: recognitions,
+            data:inferenceResults,
+            previewH:math.max(_imageHeight, _imageWidth),
             previewW: math.min(_imageHeight, _imageWidth),
-            screenH: size.height,
-            screenW: size.width,
+            screenH: screen.height,//808
+            screenW: screen.width,//384
           ),
-          _cameraTogglesRowWidget(),
-        ],
-      );
+        _cameraTogglesRowWidget()],
+      ),
+    );
     }
     return Center(child: CircularProgressIndicator());
   }

@@ -90,6 +90,11 @@ flutter:
     - assets/images/
     - assets/posenet_mv1_075_float_from_checkpoints.tflite
     - assets/movenet_lightning.tflite
+    - assets/movenet_thunder.tflite
+    - assets/movenet_lightning_4.tflite
+    - assets/movenet_lightning_5.tflite
+
+
     - assets/model.tflite
     - assets/
     - assets/movenet_singlepose_lightning_3.tflite

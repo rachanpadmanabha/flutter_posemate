@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:yoga_training_app/tflite/recognition.dart';
+import 'dart:ui' as ui;
 
 class RenderData extends StatefulWidget {
-  final List<dynamic
-  > data;
+  final List<dynamic> data;
+  final List<dynamic> data1;
+
   final int previewH;
   final int previewW;
   final double screenH;
   final double screenW;
 
   RenderData(
-      {required this.data,
-      required this.previewH,
-      required this.previewW,
-      required this.screenH,
-      required this.screenW});
+      {required this.data,required  this.data1,required  this.previewH,required  this.previewW, required this.screenH, required this.screenW});
   @override
   _RenderDataState createState() => _RenderDataState();
 }
 
 class _RenderDataState extends State<RenderData> {
   late Map<String, List<double>> inputArr;
-  // static const double THRESHOLD = 0.00001;
+
   late String excercise = 'squat';
-  late double upperRange = 300;
+  late double upperRange = 280;
   late double lowerRange = 500;
   late bool midCount, isCorrectPosture;
   late int _counter;
@@ -50,8 +47,6 @@ class _RenderDataState extends State<RenderData> {
   var leftAnklePos = Vector(0, 0);
   var rightAnklePos = Vector(0, 0);
 
-  List<Recognition> _recognitions = [];
-
   @override
   void initState() {
     inputArr = new Map();
@@ -67,197 +62,100 @@ class _RenderDataState extends State<RenderData> {
     super.initState();
   }
 
-  bool _postureAccordingToExercise(Map<String, List<double>> poses) {
-    setState(() {
-      shoulderLY = poses['leftShoulder']![1];
-      shoulderRY = poses['rightShoulder']![1];
-      kneeLY = poses['leftKnee']![1];
-      kneeRY = poses['rightKnee']![1];
-    });
-    if (excercise == 'squat') {
-      if (squatUp) {
-        return poses['leftShoulder']![1] < 320 &&
-            poses['leftShoulder']![1] > 280 &&
-            poses['rightShoulder']![1] < 320 &&
-            poses['rightShoulder']![1] > 280 &&
-            poses['rightKnee']![1] > 570 &&
-            poses['leftKnee']![1] > 570;
-      } else {
-        return poses['leftShoulder']![1] > 475 &&
-            poses['rightShoulder']![1] > 475;
-      }
-    }
-    return true;
-  }
 
-  _checkCorrectPosture(Map<String, List<double>> poses) {
-    if (_postureAccordingToExercise(poses)) {
-      if (!isCorrectPosture) {
-        setState(() {
-          isCorrectPosture = true;
-          correctColor = Colors.green;
-        });
-      }
-    } else {
-      if (isCorrectPosture) {
-        setState(() {
-          isCorrectPosture = false;
-          correctColor = Colors.red;
-        });
-      }
-    }
-  }
-
-  Future<void> _countingLogic(Map<String, List<double>> poses) async {
-    if (poses != null) {
-      _checkCorrectPosture(poses);
-
-      if (isCorrectPosture && squatUp && midCount == false) {
-        //in correct initial posture
-        setState(() {
-          whatToDo = 'Squat Down';
-          //correctColor = Colors.green;
-        });
-        squatUp = !squatUp;
-        isCorrectPosture = false;
-      }
-
-      //lowered all the way
-      if (isCorrectPosture && !squatUp && midCount == false) {
-        midCount = true;
-        isCorrectPosture = false;
-        squatUp = !squatUp;
-        setState(() {
-          whatToDo = 'Go Up';
-          //correctColor = Colors.green;
-        });
-      }
-
-      //back up
-      if (midCount &&
-          poses['leftShoulder']![1] < 320 &&
-          poses['leftShoulder']![1] > 280 &&
-          poses['rightShoulder']![1] < 320 &&
-          poses['rightShoulder']![1] > 280) {
-        incrementCounter();
-        midCount = false;
-        squatUp = !squatUp;
-        setState(() {
-          //whatToDo = 'Go Up';
-        });
-      }
-    }
-  }
-
-  void incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    
-    print("BBBBBBBBBBBBBBBBOOOOOOOOOOOOO");
-
     print(widget.data);
-    if (widget.previewH!= null){print('111');}else{print('H1');}
-        if (widget.previewW!= null){print('0000');}else{print('W1');}
-
-    // print(widget.previewH);
-    // print(widget.previewW+1,);
-    print(widget.screenH);
-    print(widget.screenW);
-    print(_recognitions);
-    print("OOOOOOOOOOOOOOOOOOOOOOOOOOBBBBBBBBBBBBB");
+    print("rew");
+    print(widget.data1);
 
     void _getKeyPoints(k, x, y) {
       if (k['part'] == 'leftEye') {
-        leftEyePos.x = x - 230;
-        leftEyePos.y = y - 45;
+        leftEyePos.x = x - 280;
+        leftEyePos.y = y - 100;
       }
-      if (k['part'] == 'rightEye') {
-        rightEyePos.x = x - 230;
-        rightEyePos.y = y - 45;
+      if (k["part"] == 'rightEye') {
+        rightEyePos.x = x - 280;
+        rightEyePos.y = y - 100;
       }
-      if (k['part'] == 'leftShoulder') {
-        leftShoulderPos.x = x - 230;
-        leftShoulderPos.y = y - 45;
+      if (k["part"] == 'leftShoulder') {
+        leftShoulderPos.x = x - 280;
+        leftShoulderPos.y = y - 100;
       }
-      if (k['part'] == 'rightShoulder') {
-        rightShoulderPos.x = x - 230;
-        rightShoulderPos.y = y - 45;
+      if (k["part"] == 'rightShoulder') {
+        rightShoulderPos.x = x - 280;
+        rightShoulderPos.y = y - 100;
       }
-      if (k['part'] == 'leftElbow') {
-        leftElbowPos.x = x - 230;
-        leftElbowPos.y = y - 45;
+      if (k["part"] == 'leftElbow') {
+        leftElbowPos.x = x - 280;
+        leftElbowPos.y = y - 100;
       }
-      if (k['part'] == 'rightElbow') {
-        rightElbowPos.x = x - 230;
-        rightElbowPos.y = y - 45;
+      if (k["part"] == 'rightElbow') {
+        rightElbowPos.x = x - 280;
+        rightElbowPos.y = y - 100;
       }
-      if (k['part'] == 'leftWrist') {
-        leftWristPos.x = x - 230;
-        leftWristPos.y = y - 45;
+      if (k["part"] == 'leftWrist') {
+        leftWristPos.x = x - 280;
+        leftWristPos.y = y - 100;
       }
-      if (k['part'] == 'rightWrist') {
-        rightWristPos.x = x - 230;
-        rightWristPos.y = y - 45;
+      if (k["part"] == 'rightWrist') {
+        rightWristPos.x = x - 280;
+        rightWristPos.y = y - 100;
       }
-      if (k['part'] == 'leftHip') {
-        leftHipPos.x = x - 230;
-        leftHipPos.y = y - 45;
+      if (k["part"] == 'leftHip') {
+        leftHipPos.x = x - 280;
+        leftHipPos.y = y - 100;
       }
-      if (k['part'] == 'rightHip') {
-        rightHipPos.x = x - 230;
-        rightHipPos.y = y - 45;
+      if (k["part"] == 'rightHip') {
+        rightHipPos.x = x - 280;
+        rightHipPos.y = y - 100;
       }
-      if (k['part'] == 'leftKnee') {
-        leftKneePos.x = x - 230;
-        leftKneePos.y = y - 45;
+      if (k["part"] == 'leftKnee') {
+        leftKneePos.x = x - 280;
+        leftKneePos.y = y - 100;
       }
-      if (k['part'] == 'rightKnee') {
-        rightKneePos.x = x - 230;
-        rightKneePos.y = y - 45;
+      if (k["part"] == 'rightKnee') {
+        rightKneePos.x = x - 280;
+        rightKneePos.y = y - 100;
       }
-      if (k['part'] == 'leftAnkle') {
-        leftAnklePos.x = x - 230;
-        leftAnklePos.y = y - 45;
+      if (k["part"] == 'leftAnkle') {
+        leftAnklePos.x = x - 280;
+        leftAnklePos.y = y - 100;
       }
-      if (k['part'] == 'rightAnkle') {
-        rightAnklePos.x = x - 230;
-        rightAnklePos.y = y - 45;
+      if (k["part"] == 'rightAnkle') {
+        rightAnklePos.x = x - 280;
+        rightAnklePos.y = y - 100;
       }
     }
 
     List<Widget> _renderKeypoints() {
       var lists = <Widget>[];
       widget.data.forEach((re) {
-        var list = re['keypoints'].values.map<Widget>((k) {
-          var _x = k['x'];
-          var _y = k['y'];
-          var scaleW, scaleH, x, y;
+        var list = re["keypoints"].values.map<Widget>((k) {
+          var _x = k["x"];
+          var _y = k["y"];
+          var _score = k["score"];
 
-          
+          if (_score > 0.1){
+          var scaleW, scaleH, x, y;
+          print('screenW is ${widget.screenW}\n screenH is ${widget.screenH}\n previewH is ${widget.previewH}\n previewW is ${widget.previewW}\n');
           if (widget.screenH / widget.screenW >
               widget.previewH / widget.previewW) {
-                // if (widget.previewW != null){
             scaleW = widget.screenH / widget.previewH * widget.previewW;
-                // }
             scaleH = widget.screenH;
             var difW = (scaleW - widget.screenW) / scaleW;
             x = (_x - difW / 2) * scaleW;
             y = _y * scaleH;
+            print('scaleH1 is ${scaleH}\nscaleW is ${scaleW}\ndifH is ${difW}\nsx is ${x}\ny is ${y}\n');
           } else {
-            // if (widget.previewW != null){
             scaleH = widget.screenW / widget.previewW * widget.previewH;
-            // }
             scaleW = widget.screenW;
             var difH = (scaleH - widget.screenH) / scaleH;
             x = _x * scaleW;
             y = (_y - difH / 2) * scaleH;
+            print('scaleH is ${scaleH}\nscaleW is ${scaleW}\ndifH is ${difH}\nsx is ${x}\ny is ${y}\n');
           }
-        
           inputArr[k['part']] = [x, y];
           //Mirroring
           if (x > 320) {
@@ -270,35 +168,37 @@ class _RenderDataState extends State<RenderData> {
 
           _getKeyPoints(k, x, y);
 
-          if (k['part'] == 'leftEye') {
-            leftEyePos.x = x - 230;
-            leftEyePos.y = y - 45;
-          }
-          if (k['part'] == 'rightEye') {
-            rightEyePos.x = x - 230;
-            rightEyePos.y = y - 45;
-          }
+          // if (k["part"] == 'leftEye') {
+          //   leftEyePos.x = x - 280;
+          //   leftEyePos.y = y - 100;
+          // }
+          // if (k["part"] == 'rightEye') {
+          //   rightEyePos.x = x - 280;
+          //   rightEyePos.y = y - 100;
+          // }
           return Positioned(
-            left: x - 230,
+            left: x - 280,
             top: y - 50,
             width: 100,
             height: 15,
             child: Container(
-                // child: Text(
-                //   "● ${k['part']}",
-                //   style: TextStyle(
-                //     color: Color.fromRGBO(37, 213, 253, 1.0),
-                //     fontSize: 12.0,
-                //   ),
-                // ),
+                child: Text(
+                  "● ${k["part"]}",
+                  style: TextStyle(
+                    color: Color.fromRGBO(37, 213, 253, 1.0),
+                    fontSize: 12.0,
+                  ),
+                ),
                 ),
           );
+        }
+        else{return Positioned(child: Container());}
         }).toList();
 
-        _countingLogic(inputArr);
         inputArr.clear();
 
         lists..addAll(list);
+      
       });
       //lists.clear();
 
@@ -386,12 +286,6 @@ class MyPainter extends CustomPainter {
   MyPainter({required this.left, required this.right});
   @override
   void paint(Canvas canvas, Size size) {
-    print('inside painter');
-    print(left.x);
-    print(left.y);
-    
-    print(right.x);
-    print(right.y);
     final p1 = Offset(left.x, left.y);
     final p2 = Offset(right.x, right.y);
     final paint = Paint()
